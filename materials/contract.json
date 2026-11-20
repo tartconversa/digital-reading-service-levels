@@ -1,0 +1,146 @@
+{
+  "synthetic": true,
+  "description": "数字阅读使用口径与授权服务核算的合成输入资料；不含未来分析结论。",
+  "tables": {
+    "schools": {
+      "description": "参与学校；设备量是服务条件，不是能力指标。",
+      "fields": {
+        "id": "学校编号",
+        "area": "地区层",
+        "devices": "同时可用终端台数"
+      },
+      "references": {}
+    },
+    "people": {
+      "description": "合成人员名册；同家庭标识用于识别非独立观测，不含姓名或联系方式。",
+      "fields": {
+        "id": "人员编号",
+        "school_id": "名册学校",
+        "household": "合成家庭编号；两人可同属一个家庭",
+        "grade": "学年年级",
+        "access_need": "必要访问形式；audio为听读、text为普通文本",
+        "sample_weight": "抽样基础权重，非分析后的校正权重"
+      },
+      "references": {
+        "school_id": "schools"
+      }
+    },
+    "contracts": {
+      "description": "采购授权与可用率抵扣口径。",
+      "fields": {
+        "id": "合同",
+        "school_id": "学校",
+        "from_on": "起日，含",
+        "to_on": "止日，不含",
+        "seats": "可授权人数",
+        "concurrent": "并发上限",
+        "price": "周期金额元",
+        "open_start": "约定日可访问起时",
+        "open_end": "止时",
+        "allowable_outage_minutes": "周期容忍中断分钟",
+        "credit_per_minute": "超出容忍后每损失分钟抵扣元；最高不超过周期金额"
+      },
+      "references": {
+        "school_id": "schools"
+      }
+    },
+    "devices": {
+      "description": "终端归属。",
+      "fields": {
+        "id": "设备",
+        "person_id": "学生",
+        "clock_offset_seconds": "初始终端相对真实时间的偏移，正为快"
+      },
+      "references": {
+        "person_id": "people"
+      }
+    },
+    "events": {
+      "description": "原始终端进度与前台事实。",
+      "fields": {
+        "id": "事件",
+        "device_id": "终端",
+        "content_id": "内容",
+        "device_at": "设备带时区时间",
+        "received_at": "平台接收时间",
+        "kind": "audio音频/page页面",
+        "position": "内容位置比例0至1，可回退",
+        "foreground": "是否前台"
+      },
+      "references": {
+        "device_id": "devices"
+      }
+    },
+    "clock_corrections": {
+      "description": "终端时钟校正。",
+      "fields": {
+        "id": "校正",
+        "device_id": "终端",
+        "effective_from": "实际适用起时",
+        "offset_seconds": "终端比真实时间快的秒数",
+        "received_on": "校正收到日"
+      },
+      "references": {
+        "device_id": "devices"
+      }
+    },
+    "access_requests": {
+      "description": "包含失败访问的请求经历。",
+      "fields": {
+        "id": "访问请求",
+        "person_id": "学生",
+        "contract_id": "合同",
+        "at": "发生时间",
+        "result": "granted成功/rejected拒绝",
+        "reason": "拒绝原因或null"
+      },
+      "references": {
+        "person_id": "people",
+        "contract_id": "contracts"
+      }
+    },
+    "incidents": {
+      "description": "中断经历与原始归责声明。",
+      "fields": {
+        "id": "事件",
+        "school_ids": "涉及学校",
+        "start": "起时",
+        "end": "止时，不含",
+        "claimed_cause": "platform平台/school_closed学校关闭；原声明，不是最终裁决"
+      },
+      "references": {}
+    },
+    "claims": {
+      "description": "学校与区域申请可能重叠。",
+      "fields": {
+        "id": "申请",
+        "contract_id": "合同",
+        "incident_ids": "声称的损失事件",
+        "level": "school学校/district区域",
+        "submitted_on": "提交日",
+        "settled_on": "已结日或null",
+        "paid_credit": "已结抵扣元"
+      },
+      "references": {
+        "contract_id": "contracts"
+      }
+    },
+    "disputes": {
+      "description": "争议补证和正式裁定输入。",
+      "fields": {
+        "id": "争议",
+        "incident_id": "中断",
+        "submitted_on": "提出日",
+        "decided_on": "裁定日",
+        "decision": "最终归责",
+        "statement": "人工补证说明"
+      },
+      "references": {
+        "incident_id": "incidents"
+      }
+    }
+  },
+  "notes": [
+    "内容position只表示进度位置，不是有效阅读时长。抵扣须对合同开放区间与平台归责损失取交集，重叠区间只计一次，最高1200元；这是合同口径，不附计算结果。"
+  ]
+}
