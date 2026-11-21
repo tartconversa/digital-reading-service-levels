@@ -10,3 +10,8 @@ coverage/
 __pycache__/
 *.py[cod]
 .DS_Store
+# 运行生成的本地状态库与导出，不入库；原始资料 materials/ 保持只读
+state/
+*.db
+*.db-wal
+*.db-shm
